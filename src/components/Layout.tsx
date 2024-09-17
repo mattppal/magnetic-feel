@@ -1,39 +1,75 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
-import { ThemeProvider, useTheme } from "@/components/theme-provider"
+import { useTheme } from "@/components/theme-provider"
 import FieldPoints from '@/components/FieldPoints'
 import ControlCard from '@/components/ControlCard'
 import { ModeToggle } from '@/components/mode-toggle'
-import { SVGRenderer } from 'three/examples/jsm/renderers/SVGRenderer'
+// import { SVGRenderer } from 'three/examples/jsm/renderers/SVGRenderer.js'
+import potrace from 'potrace'
 
-const SVGExporter: React.FC<{ onExport: () => void }> = ({ onExport }) => {
+const SVGExporter: React.FC<{ onExport: (exportFn: () => void) => void }> = ({ onExport }) => {
     const { scene, camera, gl } = useThree()
 
-    const exportSVG = React.useCallback(() => {
-        const width = gl.domElement.clientWidth
-        const height = gl.domElement.clientHeight
+    const exportSVG = React.useCallback(async () => {
+        const width = gl.domElement.width
+        const height = gl.domElement.height
 
-        const rendererSVG = new SVGRenderer()
-        rendererSVG.setSize(width, height)
-        rendererSVG.render(scene, camera)
+        // Render the scene to a canvas
+        const canvas = document.createElement('canvas')
+        canvas.width = width
+        canvas.height = height
+        const context = canvas.getContext('2d')
+        if (!context) return
 
-        // Export logic
-        const XMLS = new XMLSerializer()
-        let svgfile = XMLS.serializeToString(rendererSVG.domElement)
+        gl.render(scene, camera)
+        context.drawImage(gl.domElement, 0, 0, width, height)
 
-        // Remove width, height, and viewBox attributes from the SVG
-        svgfile = svgfile.replace(/(width|height|viewBox)="[^"]*"/g, '')
-        svgfile = svgfile.replace(/style="background-color: rgb\(255, 255, 255\);"/g, '')
+        // Create SVG
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+        svg.setAttribute('width', width.toString())
+        svg.setAttribute('height', height.toString())
 
-        const svgBlob = new Blob([svgfile], { type: "image/svg+xml;charset=utf-8" })
-        const svgUrl = URL.createObjectURL(svgBlob)
-        const downloadLink = document.createElement("a")
-        downloadLink.href = svgUrl
-        downloadLink.download = 'electric_field.svg'
-        document.body.appendChild(downloadLink)
-        downloadLink.click()
-        document.body.removeChild(downloadLink)
+        // Convert canvas to SVG paths
+        const imageData = context.getImageData(0, 0, width, height)
+        try {
+            const traceData = await new Promise((resolve, reject) => {
+                potrace.trace(imageData, {
+                    turdSize: 2,
+                    alphaMax: 1,
+                    optCurve: true,
+                    optolerance: 0.1,
+                    threshold: 128,
+                }, (err: Error | null, svg: string) => {
+                    if (err) reject(err);
+                    else resolve(svg);
+                });
+            });
+
+            // Append the traced SVG paths to our SVG element
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = traceData as string;
+            const paths = tempDiv.querySelector('svg')?.innerHTML;
+            if (paths) {
+                svg.innerHTML = paths;
+            }
+
+            // Convert SVG to string
+            const serializer = new XMLSerializer()
+            const svgString = serializer.serializeToString(svg)
+
+            // Create a Blob from the SVG string
+            const svgBlob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" })
+            const svgUrl = URL.createObjectURL(svgBlob)
+            const downloadLink = document.createElement("a")
+            downloadLink.href = svgUrl
+            downloadLink.download = 'electric_field.svg'
+            document.body.appendChild(downloadLink)
+            downloadLink.click()
+            document.body.removeChild(downloadLink)
+        } catch (error) {
+            console.error('Error tracing image:', error);
+        }
     }, [scene, camera, gl])
 
     React.useEffect(() => {
@@ -44,10 +80,10 @@ const SVGExporter: React.FC<{ onExport: () => void }> = ({ onExport }) => {
 }
 
 const Layout: React.FC = () => {
-    const [shape, setShape] = useState(0)
+    const [shape, setShape] = useState(3)
     const [gridSize, setGridSize] = useState(100)
-    const [pointSize, setPointSize] = useState(0.01)
-    const [fieldStrength, setFieldStrength] = useState(0.02)
+    const [pointSize, setPointSize] = useState(0.005)
+    const [fieldStrength, setFieldStrength] = useState(0.07)
     const [fieldCenterX, setFieldCenterX] = useState(0)
     const [fieldCenterY, setFieldCenterY] = useState(0)
     const [paused, setPaused] = useState(false)

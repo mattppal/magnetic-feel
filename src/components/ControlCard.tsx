@@ -66,7 +66,7 @@ const ControlCard: React.FC<ControlCardProps> = ({ exportSVG,
                         <label className="text-sm font-medium">Point Size: {pointSize.toFixed(3)}</label>
                         <Slider
                             min={0.001}
-                            max={0.005}
+                            max={0.009}
                             step={0.001}
                             value={[pointSize]}
                             onValueChange={([value]) => {
@@ -77,7 +77,7 @@ const ControlCard: React.FC<ControlCardProps> = ({ exportSVG,
                     </div>
                     <div className="space-y-1">
                         <label className="text-sm font-medium">Field Strength: {fieldStrength.toFixed(3)}</label>
-                        <Slider min={0.001} max={0.2} step={0.001} value={[fieldStrength]} onValueChange={([value]) => setFieldStrength(value)} />
+                        <Slider min={0.000} max={0.5} step={0.01} value={[fieldStrength]} onValueChange={([value]) => setFieldStrength(value)} />
                     </div>
                     <div className="space-y-1">
                         <label className="text-sm font-medium">Field Center X: {fieldCenterX.toFixed(2)}</label>
