@@ -33,7 +33,7 @@ const ControlCard: React.FC<ControlCardProps> = ({ exportSVG,
 }) => {
 
     return (
-        <Card className="bg-background/80 backdrop-blur-sm shadow-lg text-foreground">
+        <Card className="bg-background/10 backdrop-blur-sm shadow-lg text-foreground dark:bg-background/10 dark:text-foreground dark:border-1">
             <CardHeader className="p-4">
                 <CardTitle className="text-lg">Controls</CardTitle>
             </CardHeader>

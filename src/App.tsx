@@ -1,7 +1,7 @@
-import React from 'react'
 import ElectricFieldVisualizer from './components/ElectricFieldVisualizer'
 import './App.css'
 import { ThemeProvider } from './components/theme-provider'
+
 function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="electric-field-theme">

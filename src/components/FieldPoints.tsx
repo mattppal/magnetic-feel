@@ -18,13 +18,13 @@ interface FieldPointsProps {
     fieldCenter: { x: number; y: number };
     paused: boolean;
     time: number;
+    color: string;
     // Remove isDarkMode from props
 }
 
 const FieldPoints: React.FC<FieldPointsProps> = ({ shape, gridSize, pointSize, fieldStrength, fieldCenter, paused, time }) => {
     const { theme } = useTheme()
     const isDarkMode = theme === 'dark'
-
     const instancedMesh = useRef<THREE.InstancedMesh>(null!)
     const pointsRef = useRef<THREE.Points>(null!)
 

@@ -5,7 +5,6 @@ import { useTheme } from "@/components/theme-provider"
 import FieldPoints from '@/components/FieldPoints'
 import ControlCard from '@/components/ControlCard'
 import { ModeToggle } from '@/components/mode-toggle'
-// import { SVGRenderer } from 'three/examples/jsm/renderers/SVGRenderer.js'
 import potrace from 'potrace'
 
 const SVGExporter: React.FC<{ onExport: (exportFn: () => void) => void }> = ({ onExport }) => {
@@ -33,12 +32,19 @@ const SVGExporter: React.FC<{ onExport: (exportFn: () => void) => void }> = ({ o
         // Convert canvas to SVG paths
         const imageData = context.getImageData(0, 0, width, height)
         try {
+            const tempCanvas = document.createElement('canvas')
+            tempCanvas.width = width
+            tempCanvas.height = height
+            const tempContext = tempCanvas.getContext('2d')
+            tempContext?.putImageData(imageData, 0, 0)
+            const dataURL = tempCanvas.toDataURL()
+
             const traceData = await new Promise((resolve, reject) => {
-                potrace.trace(imageData, {
+                potrace.trace(dataURL, {
                     turdSize: 2,
                     alphaMax: 1,
                     optCurve: true,
-                    optolerance: 0.1,
+                    optTolerance: 0.1,
                     threshold: 128,
                 }, (err: Error | null, svg: string) => {
                     if (err) reject(err);
