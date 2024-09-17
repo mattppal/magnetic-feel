@@ -22,29 +22,32 @@ interface ControlCardProps {
     setPaused: (paused: boolean) => void;
     time: number;
     setTime: (time: number) => void;
+    exportSVG: () => void;
 }
 
-const ControlCard: React.FC<ControlCardProps> = ({
+
+const ControlCard: React.FC<ControlCardProps> = ({ exportSVG,
     shape, setShape, gridSize, setGridSize, pointSize, setPointSize,
     fieldStrength, setFieldStrength, fieldCenterX, setFieldCenterX,
     fieldCenterY, setFieldCenterY, paused, setPaused, time, setTime
 }) => {
+
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Controls</CardTitle>
+        <Card className="bg-background/80 backdrop-blur-sm shadow-lg text-foreground">
+            <CardHeader className="p-4">
+                <CardTitle className="text-lg">Controls</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4">
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.2, duration: 0.5 }}
-                    className="space-y-4"
+                    className="space-y-3"
                 >
-                    <div>
-                        <label>Shape</label>
+                    <div className="space-y-1">
+                        <label className="text-sm font-medium">Shape</label>
                         <Select value={shape.toString()} onValueChange={(value) => setShape(Number(value))}>
-                            <SelectTrigger>
+                            <SelectTrigger className="w-full">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -55,31 +58,45 @@ const ControlCard: React.FC<ControlCardProps> = ({
                             </SelectContent>
                         </Select>
                     </div>
-                    <div>
-                        <label>Grid Size: {gridSize}</label>
+                    <div className="space-y-1">
+                        <label className="text-sm font-medium">Grid Size: {gridSize}</label>
                         <Slider min={50} max={200} step={1} value={[gridSize]} onValueChange={([value]) => setGridSize(value)} />
                     </div>
-                    <div>
-                        <label>Point Size: {pointSize.toFixed(3)}</label>
-                        <Slider min={0.001} max={0.05} step={0.001} value={[pointSize]} onValueChange={([value]) => setPointSize(value)} />
+                    <div className="space-y-1">
+                        <label className="text-sm font-medium">Point Size: {pointSize.toFixed(3)}</label>
+                        <Slider
+                            min={0.001}
+                            max={0.005}
+                            step={0.001}
+                            value={[pointSize]}
+                            onValueChange={([value]) => {
+                                const newValue = Math.max(0.001, Math.min(0.1, value));
+                                setPointSize(newValue);
+                            }}
+                        />
                     </div>
-                    <div>
-                        <label>Field Strength: {fieldStrength.toFixed(3)}</label>
-                        <Slider min={0.001} max={0.1} step={0.001} value={[fieldStrength]} onValueChange={([value]) => setFieldStrength(value)} />
+                    <div className="space-y-1">
+                        <label className="text-sm font-medium">Field Strength: {fieldStrength.toFixed(3)}</label>
+                        <Slider min={0.001} max={0.2} step={0.001} value={[fieldStrength]} onValueChange={([value]) => setFieldStrength(value)} />
                     </div>
-                    <div>
-                        <label>Field Center X: {fieldCenterX.toFixed(2)}</label>
+                    <div className="space-y-1">
+                        <label className="text-sm font-medium">Field Center X: {fieldCenterX.toFixed(2)}</label>
                         <Slider min={-1} max={1} step={0.01} value={[fieldCenterX]} onValueChange={([value]) => setFieldCenterX(value)} />
                     </div>
-                    <div>
-                        <label>Field Center Y: {fieldCenterY.toFixed(2)}</label>
+                    <div className="space-y-1">
+                        <label className="text-sm font-medium">Field Center Y: {fieldCenterY.toFixed(2)}</label>
                         <Slider min={-1} max={1} step={0.01} value={[fieldCenterY]} onValueChange={([value]) => setFieldCenterY(value)} />
                     </div>
-                    <div>
-                        <label>Time: {time.toFixed(1)}</label>
+                    <div className="space-y-1">
+                        <label className="text-sm font-medium">Time: {time.toFixed(1)}</label>
                         <Slider min={0} max={10} step={0.1} value={[time]} onValueChange={([value]) => setTime(value)} />
                     </div>
-                    <Button onClick={() => setPaused(!paused)}>{paused ? 'Resume' : 'Pause'}</Button>
+                    <Button onClick={() => setPaused(!paused)} className="w-full">
+                        {paused ? 'Resume' : 'Pause'}
+                    </Button>
+                    <Button onClick={exportSVG} className="w-full mt-2">
+                        Export SVG
+                    </Button>
                 </motion.div>
             </CardContent>
         </Card>

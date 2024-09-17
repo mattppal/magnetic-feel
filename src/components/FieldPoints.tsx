@@ -1,11 +1,12 @@
 import React, { useRef, useMemo, useCallback } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
+import { useTheme } from '@/components/theme-provider'
 
 enum Shape {
     Point,
-    Square,
-    Triangle,
+    Cube,
+    Tetrahedron,
     Sphere
 }
 
@@ -14,13 +15,16 @@ interface FieldPointsProps {
     gridSize: number;
     pointSize: number;
     fieldStrength: number;
-    fieldCenter: [number, number, number];
+    fieldCenter: { x: number; y: number };
     paused: boolean;
     time: number;
-    isDarkMode: boolean;
+    // Remove isDarkMode from props
 }
 
-const FieldPoints: React.FC<FieldPointsProps> = ({ shape, gridSize, pointSize, fieldStrength, fieldCenter, paused, time, isDarkMode }) => {
+const FieldPoints: React.FC<FieldPointsProps> = ({ shape, gridSize, pointSize, fieldStrength, fieldCenter, paused, time }) => {
+    const { theme } = useTheme()
+    const isDarkMode = theme === 'dark'
+
     const instancedMesh = useRef<THREE.InstancedMesh>(null!)
     const pointsRef = useRef<THREE.Points>(null!)
 
@@ -30,8 +34,8 @@ const FieldPoints: React.FC<FieldPointsProps> = ({ shape, gridSize, pointSize, f
         let i = 0
         for (let x = 0; x < gridSize; x++) {
             for (let y = 0; y < gridSize; y++) {
-                positions[i] = (x / gridSize - 0.5) * 2
-                positions[i + 1] = (y / gridSize - 0.5) * 2
+                positions[i] = (x / (gridSize - 1) - 0.5) * 1.5
+                positions[i + 1] = (y / (gridSize - 1) - 0.5) * 1.5
                 positions[i + 2] = 0
                 colors[i] = colors[i + 1] = colors[i + 2] = 1
                 i += 3
@@ -47,11 +51,11 @@ const FieldPoints: React.FC<FieldPointsProps> = ({ shape, gridSize, pointSize, f
             geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3))
             return geometry
         } else {
-            return shape === Shape.Square
-                ? new THREE.PlaneGeometry(1, 1)
-                : shape === Shape.Triangle
-                    ? new THREE.CircleGeometry(0.5, 3)
-                    : new THREE.CircleGeometry(0.5, 32)
+            return shape === Shape.Cube
+                ? new THREE.BoxGeometry(1, 1, 1)
+                : shape === Shape.Tetrahedron
+                    ? new THREE.TetrahedronGeometry(0.5)
+                    : new THREE.SphereGeometry(0.5, 16, 16)
         }
     }, [shape, gridSize, positions, colors])
 
@@ -66,11 +70,11 @@ const FieldPoints: React.FC<FieldPointsProps> = ({ shape, gridSize, pointSize, f
         for (let i = 0; i < positions.length; i += 3) {
             const originalX = originalPositions[i]
             const originalY = originalPositions[i + 1]
-            const dx = originalX - fieldCenter[0]
-            const dy = originalY - fieldCenter[1]
+            const dx = originalX - fieldCenter.x
+            const dy = originalY - fieldCenter.y
             const distance = Math.sqrt(dx * dx + dy * dy)
             const angle = Math.atan2(dy, dx)
-            const offset = Math.sin(distance * 10 - currentTime * 2) * fieldStrength
+            const offset = Math.sin(distance * 10 - currentTime * 2) * fieldStrength * 0.5
             const newX = originalX + Math.cos(angle) * offset
             const newY = originalY + Math.sin(angle) * offset
             const newZ = Math.sin(distance * 5 - currentTime) * fieldStrength * 0.5
@@ -83,6 +87,8 @@ const FieldPoints: React.FC<FieldPointsProps> = ({ shape, gridSize, pointSize, f
                 const matrix = new THREE.Matrix4()
                     .makeTranslation(newX, newY, newZ)
                     .scale(new THREE.Vector3(pointSize, pointSize, pointSize))
+                    .multiply(new THREE.Matrix4().makeRotationX(currentTime))
+                    .multiply(new THREE.Matrix4().makeRotationY(currentTime * 0.5))
                 instancedMesh.current.setMatrixAt(i / 3, matrix)
             }
         }
@@ -105,12 +111,11 @@ const FieldPoints: React.FC<FieldPointsProps> = ({ shape, gridSize, pointSize, f
         updatePositions(time)
     }, [time, updatePositions])
 
-    const pointColor = isDarkMode ? 'white' : 'black'
-
+    const pointColor = isDarkMode ? 0xffffff : 0x000000
     if (shape === Shape.Point) {
         return (
             <points ref={pointsRef} geometry={geometry}>
-                <pointsMaterial size={pointSize} color={pointColor} />
+                <pointsMaterial size={pointSize} color={pointColor} sizeAttenuation={false} />
             </points>
         )
     } else {
@@ -120,7 +125,7 @@ const FieldPoints: React.FC<FieldPointsProps> = ({ shape, gridSize, pointSize, f
                 args={[geometry, undefined, gridSize * gridSize]}
                 key={gridSize}
             >
-                <meshBasicMaterial color={pointColor} side={THREE.DoubleSide} />
+                <meshPhongMaterial color={pointColor} />
             </instancedMesh>
         )
     }
