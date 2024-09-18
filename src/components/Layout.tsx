@@ -91,7 +91,7 @@ const SVGExporter: React.FC<{ onExport: (exportFn: () => void) => void }> = ({ o
 const Layout: React.FC = () => {
     const [shape, setShape] = useState(3)
     const [gridSize, setGridSize] = useState(100)
-    const [pointSize, setPointSize] = useState(0.005)
+    const [pointSize, setPointSize] = useState(0.002)
     const [fieldStrength, setFieldStrength] = useState(0.2)
     const [fieldCenterX, setFieldCenterX] = useState(0)
     const [fieldCenterY, setFieldCenterY] = useState(0)
