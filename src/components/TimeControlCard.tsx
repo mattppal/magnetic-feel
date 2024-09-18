@@ -8,7 +8,7 @@ interface TimeControlCardProps {
     paused: boolean;
     setPaused: (paused: boolean) => void;
     time: number;
-    setTime: (time: number) => void;
+    setTime: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const CYCLE_DURATION = 10; // Duration of one complete cycle in seconds
@@ -29,7 +29,7 @@ const TimeControlCard: React.FC<TimeControlCardProps> = ({
 
             if (!paused) {
                 accumulatedTimeRef.current += deltaTime;
-                setTime(prevTime => (prevTime + deltaTime) % CYCLE_DURATION);
+                setTime((prevTime: number) => (prevTime + deltaTime) % CYCLE_DURATION);
             }
 
             animationFrameId = requestAnimationFrame(updateTime);
