@@ -126,9 +126,7 @@ const Layout: React.FC = () => {
                 camera={{ position: [0, 0, 2], fov: 50 }}
                 style={{ width: '100%', height: '100vh' }}
             >
-                <ambientLight intensity={0.5} />
-                <directionalLight position={[5, 5, 5]} intensity={1} />
-                <pointLight position={[10, 10, 10]} intensity={0.5} />
+                <ambientLight intensity={10} />
                 <OrbitControls />
                 <FieldPoints
                     shape={shape}
