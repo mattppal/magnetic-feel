@@ -75,3 +75,7 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+.glass-effect {
+  @apply bg-background/10 backdrop-blur-sm shadow-md text-foreground dark:bg-background/10 dark:text-foreground dark:border border-border;
+}

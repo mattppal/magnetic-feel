@@ -29,14 +29,11 @@ interface ControlCardProps {
 const ControlCard: React.FC<ControlCardProps> = ({ exportSVG,
     shape, setShape, gridSize, setGridSize, pointSize, setPointSize,
     fieldStrength, setFieldStrength, fieldCenterX, setFieldCenterX,
-    fieldCenterY, setFieldCenterY, paused, setPaused, time, setTime
+    fieldCenterY, setFieldCenterY
 }) => {
 
     return (
-        <Card className="bg-background/10 backdrop-blur-sm shadow-lg text-foreground dark:bg-background/10 dark:text-foreground dark:border-1">
-            <CardHeader className="p-4">
-                <CardTitle className="text-lg">Controls</CardTitle>
-            </CardHeader>
+        <Card className="glass-effect">
             <CardContent className="p-4">
                 <motion.div
                     initial={{ opacity: 0 }}
@@ -87,13 +84,6 @@ const ControlCard: React.FC<ControlCardProps> = ({ exportSVG,
                         <label className="text-sm font-medium">Field Center Y: {fieldCenterY.toFixed(2)}</label>
                         <Slider min={-1} max={1} step={0.01} value={[fieldCenterY]} onValueChange={([value]) => setFieldCenterY(value)} />
                     </div>
-                    <div className="space-y-1">
-                        <label className="text-sm font-medium">Time: {time.toFixed(1)}</label>
-                        <Slider min={0} max={10} step={0.1} value={[time]} onValueChange={([value]) => setTime(value)} />
-                    </div>
-                    <Button onClick={() => setPaused(!paused)} className="w-full">
-                        {paused ? 'Resume' : 'Pause'}
-                    </Button>
                     <Button onClick={exportSVG} className="w-full mt-2">
                         Export SVG
                     </Button>

@@ -6,6 +6,9 @@ import FieldPoints from '@/components/FieldPoints'
 import ControlCard from '@/components/ControlCard'
 import { ModeToggle } from '@/components/mode-toggle'
 import potrace from 'potrace'
+import TimeControlCard from '@/components/TimeControlCard'
+import { Card, CardContent } from '@/components/ui/card'
+import { motion } from 'framer-motion'
 
 const SVGExporter: React.FC<{ onExport: (exportFn: () => void) => void }> = ({ onExport }) => {
     const { scene, camera, gl } = useThree()
@@ -89,7 +92,7 @@ const Layout: React.FC = () => {
     const [shape, setShape] = useState(3)
     const [gridSize, setGridSize] = useState(100)
     const [pointSize, setPointSize] = useState(0.005)
-    const [fieldStrength, setFieldStrength] = useState(0.07)
+    const [fieldStrength, setFieldStrength] = useState(0.2)
     const [fieldCenterX, setFieldCenterX] = useState(0)
     const [fieldCenterY, setFieldCenterY] = useState(0)
     const [paused, setPaused] = useState(false)
@@ -111,8 +114,12 @@ const Layout: React.FC = () => {
     useEffect(() => {
         console.log('Current theme:', theme);
     }, [theme]);
-    return (
+    const cardVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+    }
 
+    return (
         <div className="min-h-screen bg-background text-foreground relative dark:bg-black">
             <Canvas
                 ref={canvasRef}
@@ -135,7 +142,12 @@ const Layout: React.FC = () => {
                 />
                 <SVGExporter onExport={handleExport} />
             </Canvas>
-            <div className="absolute top-4 left-4 w-80">
+            <motion.div
+                className="absolute top-4 left-4 w-80"
+                initial="hidden"
+                animate="visible"
+                variants={cardVariants}
+            >
                 <ControlCard
                     exportSVG={exportSVGFunction ?? (() => { })}
                     shape={shape}
@@ -155,10 +167,42 @@ const Layout: React.FC = () => {
                     time={time}
                     setTime={setTime}
                 />
-            </div>
-            <div className="absolute top-4 right-4">
+            </motion.div>
+            <motion.div
+                className="absolute bottom-4 left-4"
+                initial="hidden"
+                animate="visible"
+                variants={cardVariants}
+            >
+                <TimeControlCard
+                    paused={paused}
+                    setPaused={setPaused}
+                    time={time}
+                    setTime={setTime}
+                />
+            </motion.div>
+            <motion.div
+                className="absolute bottom-4 right-4"
+                initial="hidden"
+                animate="visible"
+                variants={cardVariants}
+            >
+                <Card className="glass-effect">
+                    <CardContent className="p-4 flex items-center justify-center text-sm">
+                        <p>
+                            Made with ❤️ by <a href="https://x.com/mattppal" target="_blank">Matt</a>
+                        </p>
+                    </CardContent>
+                </Card>
+            </motion.div>
+            <motion.div
+                className="absolute top-4 right-4"
+                initial="hidden"
+                animate="visible"
+                variants={cardVariants}
+            >
                 <ModeToggle />
-            </div>
+            </motion.div>
         </div>
     )
 }

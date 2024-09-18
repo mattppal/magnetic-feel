@@ -22,6 +22,8 @@ interface FieldPointsProps {
     // Remove isDarkMode from props
 }
 
+const CYCLE_DURATION = 10; // Make sure this matches the value in TimeControlCard
+
 const FieldPoints: React.FC<FieldPointsProps> = ({ shape, gridSize, pointSize, fieldStrength, fieldCenter, paused, time }) => {
     const { theme } = useTheme()
     const isDarkMode = theme === 'dark'
@@ -74,10 +76,10 @@ const FieldPoints: React.FC<FieldPointsProps> = ({ shape, gridSize, pointSize, f
             const dy = originalY - fieldCenter.y
             const distance = Math.sqrt(dx * dx + dy * dy)
             const angle = Math.atan2(dy, dx)
-            const offset = Math.sin(distance * 10 - currentTime * 2) * fieldStrength * 0.5
+            const offset = Math.sin(distance * 10 - (currentTime / CYCLE_DURATION) * Math.PI * 2) * fieldStrength * 0.5
             const newX = originalX + Math.cos(angle) * offset
             const newY = originalY + Math.sin(angle) * offset
-            const newZ = Math.sin(distance * 5 - currentTime) * fieldStrength * 0.5
+            const newZ = Math.sin(distance * 5 - (currentTime / CYCLE_DURATION) * Math.PI * 2) * fieldStrength * 0.5
 
             if (shape === Shape.Point) {
                 positions[i] = newX
@@ -87,12 +89,11 @@ const FieldPoints: React.FC<FieldPointsProps> = ({ shape, gridSize, pointSize, f
                 const matrix = new THREE.Matrix4()
                     .makeTranslation(newX, newY, newZ)
                     .scale(new THREE.Vector3(pointSize, pointSize, pointSize))
-                    .multiply(new THREE.Matrix4().makeRotationX(currentTime))
-                    .multiply(new THREE.Matrix4().makeRotationY(currentTime * 0.5))
+                    .multiply(new THREE.Matrix4().makeRotationX(currentTime / CYCLE_DURATION * Math.PI * 2))
+                    .multiply(new THREE.Matrix4().makeRotationY(currentTime / CYCLE_DURATION * Math.PI))
                 instancedMesh.current.setMatrixAt(i / 3, matrix)
             }
         }
-
         if (shape === Shape.Point) {
             object.geometry.attributes.position.needsUpdate = true
         } else {
@@ -100,9 +101,9 @@ const FieldPoints: React.FC<FieldPointsProps> = ({ shape, gridSize, pointSize, f
         }
     }, [shape, gridSize, pointSize, fieldStrength, fieldCenter, originalPositions])
 
-    useFrame((state) => {
+    useFrame(() => {
         if (!paused) {
-            updatePositions(state.clock.getElapsedTime())
+            updatePositions(time)
         }
     })
 
